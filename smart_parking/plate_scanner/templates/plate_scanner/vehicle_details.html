@@ -1,0 +1,251 @@
+{% extends "plate_scanner/base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Vehicle Details: {{ vehicle.plate_number }}</h2>
+                <a href="{% url 'plate_scanner:admin_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <!-- Vehicle Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Vehicle Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Plate Number:</strong> {{ vehicle.plate_number }}</p>
+                            <p><strong>Registration Date:</strong> {{ vehicle.registered_at|date:"F j, Y" }}</p>
+                            <p><strong>Status:</strong> 
+                                {% if vehicle.is_registered %}
+                                    <span class="badge bg-success">Registered</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Not Registered</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if booking %}
+                                <p><strong>Driver Name:</strong> {{ booking.driver_name }}</p>
+                                <p><strong>Mobile:</strong> {{ booking.mobile_no }}</p>
+                                <p><strong>Vehicle Type:</strong> {{ booking.vehicle_type }}</p>
+                                <p><strong>Assigned Slot:</strong> {{ booking.slot.slot_number }}</p>
+                            {% else %}
+                                <p class="text-muted">No booking information available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Parking Status -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Current Parking Status</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for session in parking_sessions %}
+                                {% if session.is_active %}
+                                    <div class="alert alert-success">
+                                        <h6>Currently Parked</h6>
+                                        <p><strong>Entry Time:</strong> {{ session.entry_time|date:"F j, Y H:i" }}</p>
+                                        <p><strong>Duration:</strong> {{ session.entry_time|timesince }}</p>
+                                        <p><strong>Estimated Cost:</strong> Rs. {{ session.calculate_amount }}</p>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <p class="text-muted">No active parking session</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Payment Status</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for session in parking_sessions %}
+                                {% if not session.is_active %}
+                                    <div class="alert {% if session.is_paid %}alert-success{% else %}alert-warning{% endif %}">
+                                        <h6>Session: {{ session.session_id|truncatechars:8 }}</h6>
+                                        <p><strong>Entry:</strong> {{ session.entry_time|date:"H:i" }}</p>
+                                        <p><strong>Exit:</strong> {{ session.exit_time|date:"H:i" }}</p>
+                                        <p><strong>Amount:</strong> Rs. {{ session.total_amount }}</p>
+                                        <p><strong>Status:</strong> 
+                                            {% if session.is_paid %}
+                                                <span class="badge bg-success">Paid</span>
+                                                {% if session.payment_time %}
+                                                    <small class="text-muted">({{ session.payment_time|date:"H:i" }})</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning">Pending</span>
+                                                <button class="btn btn-sm btn-success ms-2" onclick="markPaymentReceived('{{ session.session_id }}')">
+                                                    Mark Paid
+                                                </button>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <p class="text-muted">No parking sessions found</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Parking History -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Parking History</h5>
+                </div>
+                <div class="card-body">
+                    {% if parking_sessions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Session ID</th>
+                                        <th>Entry Time</th>
+                                        <th>Exit Time</th>
+                                        <th>Duration</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Payment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in parking_sessions %}
+                                    <tr>
+                                        <td><small>{{ session.session_id|truncatechars:8 }}</small></td>
+                                        <td>{{ session.entry_time|date:"M j, H:i" }}</td>
+                                        <td>
+                                            {% if session.exit_time %}
+                                                {{ session.exit_time|date:"M j, H:i" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if session.exit_time %}
+                                                {{ session.entry_time|timesince:session.exit_time }}
+                                            {% else %}
+                                                {{ session.entry_time|timesince }}
+                                            {% endif %}
+                                        </td>
+                                        <td>Rs. {{ session.total_amount }}</td>
+                                        <td>
+                                            {% if session.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Completed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if session.is_paid %}
+                                                <span class="badge bg-success">Paid</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No parking history available</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Scan Records -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Scan Records</h5>
+                </div>
+                <div class="card-body">
+                    {% if scan_records %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Type</th>
+                                        <th>Confidence</th>
+                                        <th>Session</th>
+                                        <th>Image</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scan in scan_records %}
+                                    <tr>
+                                        <td>{{ scan.timestamp|date:"M j, H:i:s" }}</td>
+                                        <td>
+                                            {% if scan.scan_type == 'ENTRY' %}
+                                                <span class="badge bg-success">Entry</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Exit</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ scan.confidence_score|floatformat:2 }}</td>
+                                        <td>
+                                            {% if scan.parking_session %}
+                                                <small class="text-muted">{{ scan.parking_session.session_id|truncatechars:8 }}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if scan.image %}
+                                                <a href="{{ scan.image.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    View
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No scan records available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markPaymentReceived(sessionId) {
+    if (confirm('Mark this payment as received?')) {
+        fetch(`/plate-scanner/admin/payment/${sessionId}/mark-paid/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 
