@@ -41,3 +41,8 @@ django-environ==0.11.2
 # Development Tools (Optional)
 django-debug-toolbar==4.2.0
 black==24.3.0  # Code formatting
+
+
+admin
+username = admin123
+password = 12345
