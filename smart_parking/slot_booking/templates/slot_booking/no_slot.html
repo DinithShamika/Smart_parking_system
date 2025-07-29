@@ -1,0 +1,62 @@
+{% load static %}
+<html>
+<head>
+    <title>No Slots Available</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 60px;
+            background-attachment: fixed;
+        }
+
+        .no-slot-card {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 15px;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        .icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #dc3545;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .btn-retry {
+            margin-top: 20px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="no-slot-card">
+            <div class="card-body">
+                <div class="icon">
+                    ❌
+                </div>
+                <h1>No Slots Available</h1>
+                <p class="lead">All parking slots are currently booked.</p>
+                <p>Please try again later or choose a different time.</p>
+                <a href="{% url 'booking:driver_booking' %}" class="btn btn-outline-danger btn-retry">Try Again</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
