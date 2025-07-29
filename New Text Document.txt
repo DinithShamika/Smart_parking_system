@@ -1,7 +1,0 @@
-username : Admin123
-password : 123
-
-
-
-
-http://localhost:8000/plate_scanner/entrance/
