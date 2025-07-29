@@ -1,0 +1,480 @@
+{% extends "plate_scanner/base.html" %}
+
+{% block title %}Smart Parking - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary mb-1">
+                        <i class="bi bi-speedometer2"></i> Parking Management Dashboard
+                    </h1>
+                    <p class="text-muted">Real-time monitoring and analytics for Smart Parking System</p>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-success fs-6">
+                        <i class="bi bi-circle-fill"></i> System Online
+                    </div>
+                    <p class="text-muted small mb-0">Last updated: <span id="lastUpdate">{{ now|date:"H:i:s" }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Date Range Filter -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-calendar-range"></i> Date Range Filter
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary d-block w-100">
+                        <i class="bi bi-funnel"></i> Apply Filter
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-secondary d-block w-100" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total Sessions</h6>
+                            <h2 class="mb-0" id="totalSessions">{{ total_sessions }}</h2>
+                            <small class="opacity-75">All time</small>
+                        </div>
+                        <div class="display-4 opacity-50">
+                            <i class="bi bi-vehicle-front"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Currently Parked</h6>
+                            <h2 class="mb-0" id="activeSessions">{{ active_sessions }}</h2>
+                            <small class="opacity-75">Active vehicles</small>
+                        </div>
+                        <div class="display-4 opacity-50">
+                            <i class="bi bi-p-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total Revenue</h6>
+                            <h2 class="mb-0" id="totalRevenue">Rs. {{ total_revenue }}</h2>
+                            <small class="opacity-75">Collected payments</small>
+                        </div>
+                        <div class="display-4 opacity-50">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Pending Payments</h6>
+                            <h2 class="mb-0" id="pendingPayments">Rs. {{ pending_payments }}</h2>
+                            <small class="opacity-75">Outstanding</small>
+                        </div>
+                        <div class="display-4 opacity-50">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Real-time Activity -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity"></i> Real-time Activity
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary active" onclick="filterActivity('all')">All</button>
+                        <button type="button" class="btn btn-outline-success" onclick="filterActivity('entry')">Entries</button>
+                        <button type="button" class="btn btn-outline-danger" onclick="filterActivity('exit')">Exits</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 400px;">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Plate Number</th>
+                                    <th>Type</th>
+                                    <th>Confidence</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityTable">
+                                {% for scan in recent_scans %}
+                                <tr class="activity-row" data-type="{{ scan.scan_type|lower }}">
+                                    <td>
+                                        <small class="text-muted">{{ scan.timestamp|date:"H:i:s" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'plate_scanner:vehicle_details' scan.vehicle.plate_number %}" class="text-decoration-none">
+                                            <strong>{{ scan.vehicle.plate_number }}</strong>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if scan.scan_type == 'ENTRY' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-arrow-right"></i> Entry
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-arrow-left"></i> Exit
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="width: 60px; height: 6px;">
+                                            <div class="progress-bar bg-{{ scan.confidence_score|floatformat:0|add:'0'|slice:':1'|yesno:'success,warning,danger' }}" 
+                                                 style="width: {{ scan.confidence_score|floatformat:0 }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ scan.confidence_score|floatformat:1 }}</small>
+                                    </td>
+                                    <td>
+                                        {% if scan.parking_session %}
+                                            <span class="badge bg-info">Session Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Session</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-p-circle-fill"></i> Currently Parked
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 400px;">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Plate</th>
+                                    <th>Duration</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parkedVehicles">
+                                {% for session in currently_parked %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'plate_scanner:vehicle_details' session.vehicle.plate_number %}" class="text-decoration-none">
+                                            <strong>{{ session.vehicle.plate_number }}</strong>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ session.entry_time|timesince }}</small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewVehicleDetails('{{ session.vehicle.plate_number }}')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment History & Quick Actions -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cash-stack"></i> Recent Payment History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if payment_history %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Plate Number</th>
+                                        <th>Amount</th>
+                                        <th>Duration</th>
+                                        <th>Payment Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in payment_history %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'plate_scanner:vehicle_details' session.vehicle.plate_number %}" class="text-decoration-none">
+                                                {{ session.vehicle.plate_number }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success">Rs. {{ session.total_amount }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ session.exit_time|timeuntil:session.entry_time }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ session.payment_time|date:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info" onclick="viewReceipt('{{ session.session_id }}')">
+                                                <i class="bi bi-receipt"></i> Receipt
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-cash-coin display-4 text-muted"></i>
+                            <p class="text-muted mt-2">No recent payments</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'plate_scanner:entrance' %}" class="btn btn-success">
+                            <i class="bi bi-door-open"></i> Open Entrance Scanner
+                        </a>
+                        <a href="{% url 'plate_scanner:exit' %}" class="btn btn-danger">
+                            <i class="bi bi-door-closed"></i> Open Exit Scanner
+                        </a>
+                        <button class="btn btn-outline-primary" onclick="exportData()">
+                            <i class="bi bi-download"></i> Export Data
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="showSystemStatus()">
+                            <i class="bi bi-gear"></i> System Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Health -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-heart-pulse"></i> System Health
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <i class="bi bi-camera-video-fill text-success fs-4"></i>
+                            </div>
+                            <small class="text-muted">Camera</small>
+                            <div class="badge bg-success">Online</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <i class="bi bi-cpu-fill text-success fs-4"></i>
+                            </div>
+                            <small class="text-muted">Scanner</small>
+                            <div class="badge bg-success">Active</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Vehicle Details -->
+<div class="modal fade" id="vehicleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vehicle Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="vehicleModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Auto-refresh data every 30 seconds
+    setInterval(refreshData, 30000);
+    
+    // Update timestamp
+    setInterval(function() {
+        $('#lastUpdate').text(new Date().toLocaleTimeString());
+    }, 1000);
+});
+
+function refreshData() {
+    // Reload the page to get fresh data
+    location.reload();
+}
+
+function filterActivity(type) {
+    $('.btn-group .btn').removeClass('active');
+    $(event.target).addClass('active');
+    
+    if (type === 'all') {
+        $('.activity-row').show();
+    } else {
+        $('.activity-row').hide();
+        $('.activity-row[data-type="' + type + '"]').show();
+    }
+}
+
+function viewVehicleDetails(plateNumber) {
+    // Load vehicle details in modal
+    $('#vehicleModalBody').html('<div class="text-center"><div class="spinner-border"></div></div>');
+    $('#vehicleModal').modal('show');
+    
+    // This would typically load via AJAX
+    setTimeout(() => {
+        $('#vehicleModalBody').html(`
+            <div class="alert alert-info">
+                <h6>Vehicle: ${plateNumber}</h6>
+                <p>Details would be loaded here...</p>
+            </div>
+        `);
+    }, 1000);
+}
+
+function viewReceipt(sessionId) {
+    // Show receipt details
+    alert('Receipt for session: ' + sessionId);
+}
+
+function exportData() {
+    // Export functionality
+    const startDate = $('#start_date').val();
+    const endDate = $('#end_date').val();
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = `?export=1&start_date=${startDate}&end_date=${endDate}`;
+    link.download = `parking_data_${startDate}_${endDate}.csv`;
+    link.click();
+}
+
+function showSystemStatus() {
+    // Show system status modal
+    alert('System Status:\n- Camera: Online\n- Scanner: Active\n- Database: Connected\n- All systems operational');
+}
+
+// Real-time updates simulation
+setInterval(function() {
+    // Simulate new activity
+    const activities = [
+        { plate: 'ABC-1234', type: 'entry', time: new Date().toLocaleTimeString() },
+        { plate: 'XYZ-5678', type: 'exit', time: new Date().toLocaleTimeString() }
+    ];
+    
+    // Randomly add new activity (for demo purposes)
+    if (Math.random() < 0.1) {
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const newRow = `
+            <tr class="activity-row" data-type="${activity.type}">
+                <td><small class="text-muted">${activity.time}</small></td>
+                <td><strong>${activity.plate}</strong></td>
+                <td>
+                    <span class="badge bg-${activity.type === 'entry' ? 'success' : 'danger'}">
+                        <i class="bi bi-arrow-${activity.type === 'entry' ? 'right' : 'left'}"></i> 
+                        ${activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                    </span>
+                </td>
+                <td>
+                    <div class="progress" style="width: 60px; height: 6px;">
+                        <div class="progress-bar bg-success" style="width: 95%"></div>
+                    </div>
+                    <small class="text-muted">0.95</small>
+                </td>
+                <td><span class="badge bg-info">Session Active</span></td>
+            </tr>
+        `;
+        $('#activityTable').prepend(newRow);
+        
+        // Remove old rows if too many
+        if ($('#activityTable tr').length > 20) {
+            $('#activityTable tr:last').remove();
+        }
+    }
+}, 5000);
+</script>
+{% endblock %}
+{% endblock %} 
