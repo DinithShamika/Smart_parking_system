@@ -22,7 +22,7 @@ from plate_scanner import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('slot_booking.urls')),
+    path('', include('booking.urls')),
     path('plate_scanner/', include('plate_scanner.urls', namespace='plate_scanner')),
 
 
