@@ -1,0 +1,43 @@
+# Core Django
+Django==5.0.6
+django-crispy-forms==2.1
+crispy-bootstrap5==2024.2
+django-allauth==0.58.2
+django-filter==24.2
+
+# Database 
+psycopg2-binary==2.9.9  # PostgreSQL
+# mysqlclient==2.2.1  # MySQL
+# sqlparse==0.4.4  # SQLite 
+
+# API & License Plate Recognition (ANPR)
+requests==2.31.0  # For OpenALPR API calls
+opencv-python==4.9.0.80  # For camera/image processing
+numpy==1.26.4  # Required for OpenCV
+Pillow==10.2.0  # Image handling
+
+# QR Code Generation
+django-qr-code==3.1.1
+qrcode==7.4.2
+
+# Email & Notifications
+django-email-validator==2.0.0
+celery==5.3.6  # For async email tasks
+redis==5.0.1  # Celery broker (optional but recommended)
+
+# PDF/Bill Generation
+reportlab==4.1.0  # For PDF bills
+django-weasyprint==1.1.0  # Alternative HTML-to-PDF
+
+# Payment Integration (Stripe example)
+stripe==7.17.0
+
+# Security & Deployment
+gunicorn==21.2.0  # Production server
+whitenoise==6.6.0  # Static files
+python-dotenv==1.0.1  # Environment variables
+django-environ==0.11.2
+
+# Development Tools (Optional)
+django-debug-toolbar==4.2.0
+black==24.3.0  # Code formatting
