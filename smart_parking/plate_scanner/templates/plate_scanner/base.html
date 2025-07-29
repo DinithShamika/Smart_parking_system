@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Parking - Plate Scanner{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color:rgba(189, 198, 206, 0.91);
+            --secondary-color:rgb(9, 81, 129);
+            --accent-color:rgb(232, 0, 0);
+            --success-color:rgb(0, 221, 92);
+            --warning-color:rgb(255, 159, 5);
+            --dark-color:rgb(0, 51, 103);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg,rgb(205, 214, 255) 0%,rgb(6, 25, 120) 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--dark-color) 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white ;
+        }
+        
+        .navbar-brand i {
+            color: var(--secondary-color);
+            margin-right: 8px;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.45);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+            
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn {
+            color: black;
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--secondary-color),rgb(8, 91, 147));
+            border: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-color), #229954);
+            border: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, var(--accent-color), #c0392b);
+            border: none;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .badge {
+            border-radius: 6px;
+            padding: 6px 12px;
+        }
+        
+        .scanner-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .camera-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .scanning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online { background-color: var(--success-color); }
+        .status-offline { background-color: var(--accent-color); }
+        .status-warning { background-color: var(--warning-color); }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-camera-reels-fill"></i>
+                Smart Parking Scanner
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'plate_scanner:entrance' %}">
+                            <i class="bi bi-door-open"></i> Entrance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'plate_scanner:exit' %}">
+                            <i class="bi bi-door-closed"></i> Exit
+                        </a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'plate_scanner:admin_dashboard' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <span class="status-indicator status-online" id="systemStatus"></span>
+                            System Online
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-container">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <p>&copy; 2025 Ai Based Smart Parking System. Powered by AI Plate Recognition Technology. In D.M.B.D Sahamika -0077</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- System Status Check -->
+    <script>
+        function updateSystemStatus() {
+            $.get("{% url 'plate_scanner:camera_status' %}", function(data) {
+                const statusIndicator = $('#systemStatus');
+                if (data.status === 'success' && data.working_cameras.length > 0) {
+                    statusIndicator.removeClass('status-offline status-warning').addClass('status-online');
+                } else {
+                    statusIndicator.removeClass('status-online status-warning').addClass('status-offline');
+                }
+            }).fail(function() {
+                $('#systemStatus').removeClass('status-online status-warning').addClass('status-offline');
+            });
+        }
+        
+        // Update status every 30 seconds
+        updateSystemStatus();
+        setInterval(updateSystemStatus, 30000);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
