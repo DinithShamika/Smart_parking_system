@@ -1,168 +1,153 @@
 {% extends "plate_scanner/base.html" %}
 
-{% block title %}Smart Parking - Entrance Scanner{% endblock %}
+{% block title %}Smart Parking - Enhanced Entrance Scanner{% endblock %}
 
 {% block content %}
 <div class="scanner-container">
-    <!-- Header -->
-    <div class="text-center mb-4">
-        <h1 class="display-5 fw-bold text-primary mb-2">
-            <i class="bi bi-door-open-fill"></i> Entrance Scanner
-        </h1>
-        <p class="text-muted">Automated vehicle entry with AI-powered plate recognition</p>
-    </div>
-    
-    <!-- System Status Dashboard -->
+    <!-- Header with Live Stats -->
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <i class="bi bi-camera-video-fill fs-1 mb-2"></i>
-                    <h5>Camera Status</h5>
-                    <span id="cameraStatusText" class="badge bg-light text-dark">Checking...</span>
-                </div>
+        <div class="col-md-8">
+            <div class="text-center">
+                <h1 class="display-5 fw-bold text-primary mb-2">
+                    <i class="bi bi-camera-video-fill"></i> Enhanced Entrance Scanner
+                </h1>
+                <p class="text-muted">High-accuracy number plate detection for vehicle entry</p>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white">
+            <div class="card bg-gradient-primary text-white">
                 <div class="card-body text-center">
-                    <i class="bi bi-check-circle-fill fs-1 mb-2"></i>
-                    <h5>Scanner Status</h5>
-                    <span id="scannerStatusText" class="badge bg-light text-dark">Ready</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <i class="bi bi-vehicle-front-fill fs-1 mb-2"></i>
-                    <h5>Today's Entries</h5>
-                    <span id="todayEntries" class="badge bg-light text-dark">0</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Camera Feed -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="bi bi-camera"></i> Live Camera Feed
-            </h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="camera-container position-relative">
-                <video id="camera" width="100%" autoplay muted></video>
-                <div id="scanningOverlay" class="scanning-overlay" style="display: none;">
-                    <div class="spinner-border text-light" role="status"></div>
-                    <p class="mt-3 mb-0">Scanning for license plate...</p>
-                    <div class="progress mt-2" style="width: 200px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
-                    </div>
-                </div>
-                
-                <!-- Plate Detection Box -->
-                <div id="plateBox" class="position-absolute" style="display: none; border: 3px solid #27ae60; border-radius: 8px; pointer-events: none;"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Scan Results -->
-    <div id="scanResult" class="card mb-4" style="display: none;">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="bi bi-info-circle"></i> Scan Results
-            </h5>
-        </div>
-        <div class="card-body" id="scanResultContent">
-            <!-- Results will be populated here -->
-        </div>
-    </div>
-    
-    <!-- Control Panel -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="bi bi-gear"></i> Scanner Controls
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="d-grid gap-2">
-                        <button id="startBtn" class="btn btn-success btn-lg">
-                            <i class="bi bi-play-circle"></i> Start Scanner
-                        </button>
-                        <button id="stopBtn" class="btn btn-danger btn-lg" disabled>
-                            <i class="bi bi-stop-circle"></i> Stop Scanner
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="d-grid gap-2">
-                        <button id="testBtn" class="btn btn-outline-primary">
-                            <i class="bi bi-camera"></i> Test Camera
-                        </button>
-                        <button id="debugBtn" class="btn btn-outline-secondary" onclick="toggleDebug()">
-                            <i class="bi bi-bug"></i> Debug Mode
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% comment %}
-    <!-- Debug Information -->
-    <div id="debugInfo" class="card" style="display: none;">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="bi bi-bug"></i> Debug Information
-            </h5>
-        </div>
-        <div class="card-body">
-            <div id="debugContent"></div>
-        </div>
-    </div>
+                    <h4 class="mb-0">
+                        <i class="bi bi-clock"></i> Live Stats
 
-    <!-- Help Section -->
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-lightbulb"></i> Detection Tips
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li><i class="bi bi-check text-success"></i> Ensure good lighting</li>
-                        <li><i class="bi bi-check text-success"></i> Position plate clearly in view</li>
-                        <li><i class="bi bi-check text-success"></i> Keep camera steady</li>
-                        <li><i class="bi bi-check text-success"></i> Clean, readable plates work best</li>
-                    </ul>
-                </div>
-            </div>
+
+<div class="container py-4">
+  <div class="row g-4 align-items-stretch">
+    <div class="col-lg-8">
+      <div class="card shadow-lg h-100">
+        <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-door-open"></i> <b>Entrance Camera</b></span>
+          <span id="scannerStatus" class="badge bg-success">Active</span>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-tools"></i> Troubleshooting
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li><i class="bi bi-exclamation-triangle text-warning"></i> Check camera permissions</li>
-                        <li><i class="bi bi-exclamation-triangle text-warning"></i> Close other camera apps</li>
-                        <li><i class="bi bi-exclamation-triangle text-warning"></i> Update camera drivers</li>
-                        <li><i class="bi bi-exclamation-triangle text-warning"></i> Try refreshing the page</li>
-                    </ul>
-                </div>
+        <div class="card-body p-0 bg-dark rounded-bottom">
+          <div class="camera-container position-relative rounded-bottom overflow-hidden" style="min-height:340px;">
+            <video id="camera" width="100%" style="max-height:400px;object-fit:cover;" autoplay muted></video>
+            <div id="scanningOverlay" class="scanning-overlay" style="display: none;">
+              <div class="spinner-border text-light" role="status"></div>
+              <p class="mt-3 mb-0">Scanning for number plate...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+          <i class="bi bi-123"></i> <b>Real-Time Plate Detection</b>
+        </div>
+        <div class="card-body">
+          <div id="realTimeText" class="display-6 text-center text-primary fw-bold" style="letter-spacing:2px;">
+            <span class="text-muted">Waiting for scan...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+          <i class="bi bi-gear"></i> <b>Controls</b>
+        </div>
+        <div class="card-body d-grid gap-3">
+          <button id="startBtn" class="btn btn-success btn-lg">
+            <i class="bi bi-play-circle"></i> Start Scanner
+          </button>
+          <button id="stopBtn" class="btn btn-danger btn-lg" disabled>
+            <i class="bi bi-stop-circle"></i> Stop Scanner
+          </button>
+          <button id="quickScanBtn" class="btn btn-warning btn-lg">
+            <i class="bi bi-lightning"></i> Quick Scan
+          </button>
+        </div>
+      </div>
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <i class="bi bi-info-circle"></i> <b>Instructions</b>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Ensure the vehicle plate is clearly visible to the camera.</li>
+            <li>Click <b>Start Scanner</b> to begin real-time detection.</li>
+            <li>Detected plates will appear instantly below the camera.</li>
+            <li>Use <b>Quick Scan</b> for a one-time fast scan.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
             </div>
         </div>
     </div>
 </div>
-{% endcomment %}
+
+<style>
+.camera-container {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.scanning-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 10;
+}
+
+.detection-box {
+    position: absolute;
+    border: 3px solid #28a745;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 5;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+.activity-item {
+    padding: 10px;
+    border-left: 4px solid #007bff;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.activity-item.success {
+    border-left-color: #28a745;
+    background: #d4edda;
+}
+
+.activity-item.warning {
+    border-left-color: #ffc107;
+    background: #fff3cd;
+}
+</style>
 
 {% block scripts %}
 <script>
@@ -170,52 +155,95 @@ $(document).ready(function() {
     const video = document.getElementById('camera');
     const startBtn = $('#startBtn');
     const stopBtn = $('#stopBtn');
+    const quickScanBtn = $('#quickScanBtn');
     const testBtn = $('#testBtn');
     const scanResult = $('#scanResult');
     const scanResultContent = $('#scanResultContent');
     const scanningOverlay = $('#scanningOverlay');
-    const plateBox = $('#plateBox');
     const cameraStatusText = $('#cameraStatusText');
     const scannerStatusText = $('#scannerStatusText');
+    const accuracyText = $('#accuracyText');
+    const detectionCount = $('#detectionCount');
+    const realTimeText = $('#realTimeText');
+    const detectionBox = $('#detectionBox');
     const todayEntries = $('#todayEntries');
-    const debugInfo = $('#debugInfo');
-    const debugContent = $('#debugContent');
+    const currentlyParked = $('#currentlyParked');
+    const recentActivity = $('#recentActivity');
     
     let scanInterval;
-    let debugMode = false;
+    let realTimeInterval;
     let scanCount = 0;
+    let recentActivities = [];
 
     // Initialize
     checkCameraStatus();
-    updateTodayEntries();
+    updateLiveStats();
+    loadRecentActivity();
     
     // Update stats every 30 seconds
-    setInterval(updateTodayEntries, 30000);
+    setInterval(updateLiveStats, 30000);
+    setInterval(loadRecentActivity, 10000);
 
     function checkCameraStatus() {
         $.get("{% url 'plate_scanner:camera_status' %}", function(data) {
             if (data.status === 'success') {
                 if (data.working_cameras.length > 0) {
                     cameraStatusText.text('Available').removeClass('bg-warning bg-danger').addClass('bg-success');
-                    scannerStatusText.text('Ready').removeClass('bg-warning bg-danger').addClass('bg-success');
+                    scannerStatusText.text('Enhanced').removeClass('bg-warning bg-danger').addClass('bg-success');
+                    accuracyText.text('High').removeClass('bg-warning bg-danger').addClass('bg-success');
                 } else {
                     cameraStatusText.text('No Cameras').removeClass('bg-success bg-warning').addClass('bg-danger');
                     scannerStatusText.text('Unavailable').removeClass('bg-success bg-warning').addClass('bg-danger');
+                    accuracyText.text('Low').removeClass('bg-success bg-warning').addClass('bg-danger');
                 }
             } else {
                 cameraStatusText.text('Error').removeClass('bg-success bg-warning').addClass('bg-danger');
                 scannerStatusText.text('Error').removeClass('bg-success bg-warning').addClass('bg-danger');
+                accuracyText.text('Error').removeClass('bg-success bg-warning').addClass('bg-danger');
             }
         }).fail(function() {
             cameraStatusText.text('Offline').removeClass('bg-success bg-warning').addClass('bg-danger');
             scannerStatusText.text('Offline').removeClass('bg-success bg-warning').addClass('bg-danger');
+            accuracyText.text('Offline').removeClass('bg-success bg-warning').addClass('bg-danger');
         });
     }
 
-    function updateTodayEntries() {
-        // This would typically fetch from an API endpoint
-        // For now, we'll use the scan count
-        todayEntries.text(scanCount);
+    function updateLiveStats() {
+        $.get("{% url 'plate_scanner:today_stats' %}", function(data) {
+            todayEntries.text(data.today_entries || 0);
+            currentlyParked.text(data.currently_parked || 0);
+        });
+    }
+
+    function loadRecentActivity() {
+        // Simulate recent activity - in real app, this would come from API
+        const activities = [
+            { plate: 'ABC123', time: '2 min ago', type: 'entry', status: 'success' },
+            { plate: 'XYZ789', time: '5 min ago', type: 'entry', status: 'success' },
+            { plate: 'DEF456', time: '8 min ago', type: 'entry', status: 'warning' }
+        ];
+        
+        let html = '';
+        activities.forEach(activity => {
+            html += `
+                <div class="col-md-4">
+                    <div class="activity-item ${activity.status}">
+                        <div class="d-flex justify-content-between">
+                            <strong>${activity.plate}</strong>
+                            <small>${activity.time}</small>
+                        </div>
+                        <div class="text-muted">
+                            <i class="bi bi-arrow-right-circle"></i> Vehicle Entry
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        recentActivity.html(html);
+    }
+
+    function updateStats() {
+        detectionCount.text(scanCount);
     }
 
     // Test Camera
@@ -246,6 +274,7 @@ $(document).ready(function() {
                 video.srcObject = stream;
                 startBtn.prop('disabled', true);
                 stopBtn.prop('disabled', false);
+                quickScanBtn.prop('disabled', false);
                 scannerStatusText.text('Active').removeClass('bg-success bg-warning').addClass('bg-primary');
                 
                 // Start backend scanner
@@ -253,8 +282,9 @@ $(document).ready(function() {
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 }, function(response) {
                     if (response.success) {
-                        scanInterval = setInterval(scanPlate, 1500);
-                        showNotification('Scanner started successfully', 'success');
+                        // Start real-time scanning
+                        realTimeInterval = setInterval(realTimeScan, 200); // Scan every 0.2 seconds
+                        showNotification('Enhanced scanner started successfully', 'success');
                     } else {
                         showNotification(response.message, 'error');
                         resetScanner();
@@ -271,7 +301,7 @@ $(document).ready(function() {
 
     // Stop scanner
     stopBtn.click(function() {
-        clearInterval(scanInterval);
+        clearInterval(realTimeInterval);
         resetScanner();
         
         $.post("{% url 'plate_scanner:stop_scan' %}", {
@@ -285,105 +315,167 @@ $(document).ready(function() {
         });
     });
 
+    // Quick scan button
+    quickScanBtn.click(function() {
+        if (!video.srcObject) {
+            showNotification('Please start the scanner first', 'warning');
+            return;
+        }
+        
+        scanningOverlay.show();
+        
+        $.post("{% url 'plate_scanner:quick_scan' %}", {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(data) {
+            scanningOverlay.hide();
+            
+            if (data.status === 'success') {
+                scanCount++;
+                updateStats();
+                
+                let resultHtml = `
+                    <div class="alert alert-success">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="text-success mb-2">
+                                    <i class="bi bi-check-circle"></i> Number Plate Detected!
+                                </h4>
+                                <h3 class="fw-bold text-primary">${data.text}</h3>
+                                <p class="mb-1">
+                                    <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Time:</strong> ${new Date().toLocaleTimeString()}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Mode:</strong> Enhanced (0.5s)
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Status:</strong> Vehicle Entry Recorded
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="display-4 text-success">
+                                    <i class="bi bi-car-front"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                scanResultContent.html(resultHtml);
+                scanResult.show();
+                
+                // Add to recent activity
+                addRecentActivity(data.text, 'entry', 'success');
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    scanResult.fadeOut();
+                }, 5000);
+                
+                showNotification(`Number plate "${data.text}" detected and entry recorded!`, 'success');
+                
+            } else if (data.status === 'no_text') {
+                showNotification('No number plate detected in 0.5 seconds', 'info');
+            } else {
+                showNotification(data.message, 'error');
+            }
+        }, function() {
+            scanningOverlay.hide();
+            showNotification('Quick scan failed', 'error');
+        });
+    });
+
+    function addRecentActivity(plate, type, status) {
+        const activity = {
+            plate: plate,
+            time: 'Just now',
+            type: type,
+            status: status
+        };
+        recentActivities.unshift(activity);
+        if (recentActivities.length > 6) {
+            recentActivities.pop();
+        }
+        loadRecentActivity();
+    }
+
     function resetScanner() {
         if (video.srcObject) {
             video.srcObject.getTracks().forEach(track => track.stop());
         }
         startBtn.prop('disabled', false);
         stopBtn.prop('disabled', true);
-        scannerStatusText.text('Ready').removeClass('bg-primary bg-warning').addClass('bg-success');
+        quickScanBtn.prop('disabled', true);
+        scannerStatusText.text('Enhanced').removeClass('bg-primary bg-warning').addClass('bg-success');
         scanningOverlay.hide();
-        plateBox.hide();
+        detectionBox.hide();
+        
+        // Clear real-time display
+        realTimeText.html(`
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Start the enhanced scanner to see detected plates in real-time
+            </div>
+        `);
     }
 
-    function scanPlate() {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const frame = canvas.toDataURL('image/jpeg');
-        
-        scanningOverlay.show();
-        
-        $.ajax({
-            url: "{% url 'plate_scanner:process_entrance' %}",
-            method: 'POST',
-            data: {
-                'frame': frame,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function(data) {
-                scanningOverlay.hide();
+    function realTimeScan() {
+        $.post("{% url 'plate_scanner:real_time_scan' %}", {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(data) {
+            if (data.status === 'success' && data.texts && data.texts.length > 0) {
+                scanCount++;
+                updateStats();
                 
-                if (data.status === 'success') {
-                    scanCount++;
-                    updateTodayEntries();
-                    
-                    let resultHtml = `
-                        <div class="alert alert-success">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h4 class="text-success mb-2">
-                                        <i class="bi bi-check-circle"></i> Vehicle Detected
-                                    </h4>
-                                    <h3 class="fw-bold text-primary">${data.plate}</h3>
-                                    <p class="mb-1">
-                                        <strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Time:</strong> ${new Date().toLocaleTimeString()}
-                                    </p>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="display-4 text-success">
-                                        <i class="bi bi-vehicle-front"></i>
+                // Update real-time display
+                let textHtml = '<div class="row">';
+                data.texts.forEach((textInfo, index) => {
+                    textHtml += `
+                        <div class="col-md-6 mb-2">
+                            <div class="alert alert-success mb-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${textInfo.text}</strong>
+                                        <br>
+                                        <small>Confidence: ${(textInfo.confidence * 100).toFixed(1)}%</small>
+                                    </div>
+                                    <div class="text-success">
+                                        <i class="bi bi-car-front-fill fs-4"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `;
-                    
-                    if (data.is_registered) {
-                        resultHtml += `
-                            <div class="alert alert-info">
-                                <h6><i class="bi bi-person-check"></i> Registered Vehicle</h6>
-                                <p class="mb-1"><strong>Driver:</strong> ${data.driver_name}</p>
-                                <p class="mb-0"><strong>Slot:</strong> ${data.slot_number}</p>
-                            </div>
-                        `;
-                    } else {
-                        resultHtml += `
-                            <div class="alert alert-warning">
-                                <h6><i class="bi bi-exclamation-triangle"></i> Unregistered Vehicle</h6>
-                                <p class="mb-0">This vehicle is not pre-registered in the system.</p>
-                            </div>
-                        `;
-                    }
-                    
-                    scanResultContent.html(resultHtml);
-                    scanResult.show();
-                    
-                    // Auto-hide after 10 seconds
-                    setTimeout(() => {
-                        scanResult.fadeOut();
-                    }, 10000);
-                    
-                    showNotification(`Vehicle ${data.plate} detected successfully`, 'success');
-                    
-                } else if (data.status === 'no_plate') {
-                    // No plate detected, continue scanning
-                    if (debugMode) {
-                        debugContent.append(`<small class="text-muted">${new Date().toLocaleTimeString()}: No plate detected</small><br>`);
-                    }
-                } else {
-                    showNotification(data.message, 'error');
+                });
+                textHtml += '</div>';
+                
+                realTimeText.html(textHtml);
+                
+                // Show detection box
+                detectionBox.show();
+                
+                // Show notification for first text
+                if (data.texts.length > 0) {
+                    showNotification(`Number plate detected: ${data.texts[0].text}`, 'success');
                 }
-            },
-            error: function() {
-                scanningOverlay.hide();
-                showNotification('Scan failed. Please try again.', 'error');
+                
+            } else if (data.status === 'no_text') {
+                // Show "scanning" message
+                realTimeText.html(`
+                    <div class="alert alert-warning">
+                        <i class="bi bi-search"></i> Scanning for number plates... Point camera at vehicle license plate
+                    </div>
+                `);
+                detectionBox.hide();
             }
+        }, function() {
+            realTimeText.html(`
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Scanner error. Please try again.
+                </div>
+            `);
+            detectionBox.hide();
         });
     }
 
@@ -405,22 +497,11 @@ $(document).ready(function() {
         
         $('body').append(notification);
         
-        // Auto-remove after 5 seconds
+        // Auto-remove after 3 seconds
         setTimeout(() => {
             notification.alert('close');
-        }, 5000);
+        }, 3000);
     }
-
-    window.toggleDebug = function() {
-        debugMode = !debugMode;
-        if (debugMode) {
-            debugInfo.show();
-            debugBtn.text('Hide Debug').removeClass('btn-outline-secondary').addClass('btn-secondary');
-        } else {
-            debugInfo.hide();
-            debugBtn.text('Debug Mode').removeClass('btn-secondary').addClass('btn-outline-secondary');
-        }
-    };
 });
 </script>
 {% endblock %}

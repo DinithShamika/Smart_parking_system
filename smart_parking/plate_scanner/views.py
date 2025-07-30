@@ -23,6 +23,10 @@ def entrance_view(request):
 def exit_view(request):
     return render(request, 'plate_scanner/exit.html')
 
+def qr_scanner_view(request):
+    """View for QR code scanner page"""
+    return render(request, 'plate_scanner/qr_scanner.html')
+
 @csrf_exempt
 def start_scan(request):
     if request.method == 'POST':
@@ -31,8 +35,9 @@ def start_scan(request):
             if success:
                 return JsonResponse({
                     'success': True, 
-                    'message': f'Scanner started successfully on camera {scanner.camera_index}',
-                    'camera_index': scanner.camera_index
+                    'message': f'Number plate scanner started successfully on camera {scanner.camera_index}',
+                    'camera_index': scanner.camera_index,
+                    'scan_mode': 'fast-simple'
                 })
             else:
                 error_message = scanner.get_camera_error() or 'Failed to start camera. Please check camera permissions and try again.'
@@ -53,7 +58,7 @@ def stop_scan(request):
     if request.method == 'POST':
         try:
             scanner.stop_camera()
-            return JsonResponse({'success': True, 'message': 'Scanner stopped'})
+            return JsonResponse({'success': True, 'message': 'Number plate scanner stopped'})
         except Exception as e:
             logger.error(f"Error stopping scanner: {e}")
             return JsonResponse({'success': False, 'message': str(e)})
@@ -66,10 +71,11 @@ def process_scan(request, scan_type):
             if not scanner.scanning or not scanner.camera:
                 return JsonResponse({
                     'status': 'error', 
-                    'message': 'Camera not started. Please start the scanner first.'
+                    'message': 'Camera not started. Please start the number plate scanner first.'
                 })
             
-            frame, plates = scanner.process_frame()
+            # Process frame for text detection
+            frame, texts = scanner.process_frame()
             
             if frame is None:
                 return JsonResponse({
@@ -77,21 +83,26 @@ def process_scan(request, scan_type):
                     'message': 'Cannot read from camera. Please check camera connection.'
                 })
             
-            if plates:
-                plate = plates[0]['text']
-                confidence = plates[0]['confidence']
+            if texts:
+                # Get the best detected text
+                text_info = texts[0]
+                detected_text = text_info['text']
+                confidence = text_info['confidence']
                 
-                if scanner.save_scan(frame, plate, scan_type, confidence):
+                if scanner.save_scan(frame, detected_text, scan_type, confidence):
                     # Get additional info for response
                     response_data = {
                         'status': 'success',
-                        'plate': plate,
-                        'confidence': confidence
+                        'text': detected_text,
+                        'confidence': confidence,
+                        'scan_type': scan_type,
+                        'timestamp': datetime.now().isoformat(),
+                        'scan_mode': 'fast-simple'
                     }
                     
                     # Check if vehicle is registered
                     try:
-                        booking = Booking.objects.filter(vehicle_no=plate).first()
+                        booking = Booking.objects.filter(vehicle_no=detected_text).first()
                         if booking:
                             response_data['is_registered'] = True
                             response_data['driver_name'] = booking.driver_name
@@ -106,7 +117,7 @@ def process_scan(request, scan_type):
                     if scan_type == 'EXIT':
                         try:
                             parking_session = ParkingSession.objects.filter(
-                                vehicle__plate_number=plate,
+                                vehicle__plate_number=detected_text,
                                 is_active=False
                             ).order_by('-exit_time').first()
                             
@@ -123,7 +134,7 @@ def process_scan(request, scan_type):
                         'message': 'Failed to save scan record'
                     })
             
-            return JsonResponse({'status': 'no_plate'})
+            return JsonResponse({'status': 'no_text', 'message': 'No number plate detected'})
         except Exception as e:
             logger.error(f"Error processing scan: {e}")
             logger.error(traceback.format_exc())
@@ -139,6 +150,94 @@ def process_entry(request):
 @csrf_exempt
 def process_exit(request):
     return process_scan(request, 'EXIT')
+
+@csrf_exempt
+def quick_scan(request):
+    """Fast scanning endpoint for immediate number plate detection"""
+    if request.method == 'POST':
+        try:
+            # Check if camera is working
+            if not scanner.scanning or not scanner.camera:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Camera not started'
+                })
+            
+            # Fast scan (0.5 second timeout)
+            frame, text_info = scanner.scan_until_text(timeout=0.5)
+            
+            if frame is None:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Camera error'
+                })
+            
+            if text_info:
+                detected_text = text_info['text']
+                confidence = text_info['confidence']
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'text': detected_text,
+                    'confidence': confidence,
+                    'timestamp': datetime.now().isoformat(),
+                    'scan_mode': 'fast-simple'
+                })
+            
+            return JsonResponse({'status': 'no_text'})
+            
+        except Exception as e:
+            logger.error(f"Error in quick scan: {e}")
+            return JsonResponse({
+                'status': 'error', 
+                'message': str(e)
+            })
+
+@csrf_exempt
+def real_time_scan(request):
+    """Real-time scanning endpoint"""
+    if request.method == 'POST':
+        try:
+            # Check if camera is working
+            if not scanner.scanning or not scanner.camera:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Camera not started'
+                })
+            
+            # Process frame
+            frame, texts = scanner.process_frame()
+            
+            if frame is None:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Camera error'
+                })
+            
+            if texts:
+                # Return all detected texts
+                detected_texts = []
+                for text_info in texts:
+                    detected_texts.append({
+                        'text': text_info['text'],
+                        'confidence': text_info['confidence']
+                    })
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'texts': detected_texts,
+                    'timestamp': datetime.now().isoformat(),
+                    'scan_mode': 'fast-simple'
+                })
+            
+            return JsonResponse({'status': 'no_text'})
+            
+        except Exception as e:
+            logger.error(f"Error in real-time scan: {e}")
+            return JsonResponse({
+                'status': 'error', 
+                'message': str(e)
+            })
 
 @staff_member_required
 def admin_dashboard(request):
@@ -275,7 +374,8 @@ def camera_status(request):
             'working_cameras': working_cameras,
             'camera_details': camera_details,
             'current_camera': scanner.camera_index if scanner.camera else None,
-            'scanner_status': 'active' if scanner.scanning else 'inactive'
+            'scanner_status': 'active' if scanner.scanning else 'inactive',
+            'scan_mode': 'fast-simple'
         })
     except Exception as e:
         logger.error(f"Error checking camera status: {e}")
@@ -316,8 +416,9 @@ def system_status(request):
             },
             'system': {
                 'timestamp': timezone.now().isoformat(),
-                'uptime': 'System running',  # You could add actual uptime tracking
-                'version': '1.0.0'
+                'uptime': 'System running',
+                'version': '1.0.0',
+                'scan_mode': 'fast-simple'
             }
         }
         
@@ -383,7 +484,8 @@ def test_camera(request):
                     return JsonResponse({
                         'success': True,
                         'message': f'Camera test successful. Frame size: {frame.shape[1]}x{frame.shape[0]}',
-                        'frame_size': f"{frame.shape[1]}x{frame.shape[0]}"
+                        'frame_size': f"{frame.shape[1]}x{frame.shape[0]}",
+                        'scan_mode': 'fast-simple'
                     })
                 else:
                     scanner.stop_camera()
@@ -404,5 +506,4 @@ def test_camera(request):
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
-        
-        
+

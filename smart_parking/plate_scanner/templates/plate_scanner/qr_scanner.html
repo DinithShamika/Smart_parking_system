@@ -1,0 +1,111 @@
+{% extends "plate_scanner/base.html" %}
+
+{% block title %}QR Code Scanner{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-success text-white d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-qr-code-scan"></i> <b>QR Code Scanner</b></span>
+          <span id="qrStatus" class="badge bg-success">Ready</span>
+        </div>
+        <div class="card-body text-center">
+          <p class="text-muted mb-4">Scan QR codes for quick access, parking entry, or payment validation. Hold the QR code steady in front of your camera.</p>
+          <div id="qr-reader" style="width:100%;max-width:350px;margin:0 auto;"></div>
+          <div id="qr-result" class="mt-4"></div>
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <button id="resetBtn" class="btn btn-outline-secondary btn-sm" style="display:none;">
+              <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+            <button id="toggleSoundBtn" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-volume-up"></i> Sound On
+            </button>
+            <button id="helpBtn" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#qrHelpModal">
+              <i class="bi bi-info-circle"></i> Help
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal fade" id="qrHelpModal" tabindex="-1" aria-labelledby="qrHelpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="qrHelpModalLabel"><i class="bi bi-info-circle"></i> QR Scanner Help</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li>Allow camera access when prompted by your browser.</li>
+            <li>Hold the QR code steady and within the frame for best results.</li>
+            <li>After a successful scan, you can reset to scan another code.</li>
+            <li>Toggle sound feedback for scan success or errors.</li>
+            <li>If scanning fails, check your camera and lighting conditions.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+let soundOn = true;
+let lastResult = null;
+const qrStatus = document.getElementById('qrStatus');
+const qrResult = document.getElementById('qr-result');
+const resetBtn = document.getElementById('resetBtn');
+const toggleSoundBtn = document.getElementById('toggleSoundBtn');
+
+function playBeep(success=true) {
+  if (!soundOn) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = success ? 880 : 220;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>{o.stop();ctx.close();}, 120);
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+  if (lastResult === decodedText) return;
+  lastResult = decodedText;
+  qrResult.innerHTML = `<div class='alert alert-success'><i class='bi bi-check-circle'></i> <b>Scanned:</b> ${decodedText}</div>`;
+  qrStatus.className = 'badge bg-success';
+  qrStatus.textContent = 'Success';
+  playBeep(true);
+  resetBtn.style.display = 'inline-block';
+}
+
+function onScanFailure(error) {
+  qrStatus.className = 'badge bg-warning';
+  qrStatus.textContent = 'Scanning...';
+}
+
+let qrScanner = new Html5QrcodeScanner(
+  "qr-reader", { fps: 12, qrbox: 220, rememberLastUsedCamera: true }
+);
+qrScanner.render(onScanSuccess, onScanFailure);
+
+resetBtn.addEventListener('click', function() {
+  lastResult = null;
+  qrResult.innerHTML = '';
+  qrStatus.className = 'badge bg-success';
+  qrStatus.textContent = 'Ready';
+  this.style.display = 'none';
+});
+
+toggleSoundBtn.addEventListener('click', function() {
+  soundOn = !soundOn;
+  this.innerHTML = soundOn ? '<i class="bi bi-volume-up"></i> Sound On' : '<i class="bi bi-volume-mute"></i> Sound Off';
+});
+</script>
+{% endblock %}

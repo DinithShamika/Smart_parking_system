@@ -10,6 +10,8 @@ urlpatterns = [
     path('api/stop-scan/', views.stop_scan, name='stop_scan'),
     path('api/process-entrance/', views.process_entry, name='process_entrance'),
     path('api/process-exit/', views.process_exit, name='process_exit'),
+    path('api/quick-scan/', views.quick_scan, name='quick_scan'),
+    path('api/real-time-scan/', views.real_time_scan, name='real_time_scan'),
     path('api/parking-status/<str:plate_number>/', views.get_parking_status, name='parking_status'),
     path('api/camera-status/', views.camera_status, name='camera_status'),
     path('api/system-status/', views.system_status, name='system_status'),
@@ -20,4 +22,5 @@ urlpatterns = [
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/payment/<uuid:session_id>/mark-paid/', views.mark_payment_received, name='mark_payment'),
     path('admin/vehicle/<str:plate_number>/', views.vehicle_details, name='vehicle_details'),
+    path('qr-scanner/', views.qr_scanner_view, name='qr_scanner'),
 ]
