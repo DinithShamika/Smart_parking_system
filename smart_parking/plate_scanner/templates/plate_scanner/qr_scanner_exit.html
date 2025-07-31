@@ -1,0 +1,150 @@
+{% extends "plate_scanner/base.html" %}
+
+{% block title %}Exit QR Code Scanner{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-danger text-white d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-qr-code-scan"></i> <b>Exit QR Code Scanner</b></span>
+          <span id="qrStatus" class="badge bg-danger">Ready</span>
+        </div>
+        <div class="card-body text-center">
+          <p class="text-muted mb-4">Scan QR codes for vehicle exit. You can also say <b>bill</b> to trigger bill display.</p>
+          <div id="qr-reader" style="width:100%;max-width:350px;margin:0 auto;"></div>
+          <div id="qr-result" class="mt-4"></div>
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <button id="resetBtn" class="btn btn-outline-secondary btn-sm" style="display:none;">
+              <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+            <button id="toggleSoundBtn" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-volume-up"></i> Sound On
+            </button>
+            <button id="helpBtn" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#qrHelpModal">
+              <i class="bi bi-info-circle"></i> Help
+            </button>
+          </div>
+          <div class="mt-3">
+            <span id="voiceStatus" class="badge bg-info">Voice: Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Help Modal (reuse from main QR scanner) -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+let soundOn = true;
+let lastResult = null;
+const qrStatus = document.getElementById('qrStatus');
+const qrResult = document.getElementById('qr-result');
+const resetBtn = document.getElementById('resetBtn');
+const toggleSoundBtn = document.getElementById('toggleSoundBtn');
+const voiceStatus = document.getElementById('voiceStatus');
+
+function playBeep(success=true) {
+  if (!soundOn) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = success ? 880 : 220;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>{o.stop();ctx.close();}, 120);
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  window.speechSynthesis.speak(utter);
+}
+
+function displayBill(decodedText) {
+  // Simulate bill display (replace with AJAX call to backend if needed)
+  qrResult.innerHTML = `<div class='alert alert-info'><i class='bi bi-receipt'></i> <b>Bill for:</b> ${decodedText}<br><b>Status:</b> Free Parking</div>`;
+  qrStatus.className = 'badge bg-success';
+  qrStatus.textContent = 'Bill Displayed';
+  playBeep(true);
+  speak('Bill displayed. Free parking.');
+  resetBtn.style.display = 'inline-block';
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+  if (lastResult === decodedText) return;
+  lastResult = decodedText;
+  displayBill(decodedText);
+}
+
+function onScanFailure(error) {
+  qrStatus.className = 'badge bg-warning';
+  qrStatus.textContent = 'Scanning...';
+}
+
+let qrScanner = new Html5QrcodeScanner(
+  "qr-reader", { fps: 12, qrbox: 220, rememberLastUsedCamera: true }
+);
+qrScanner.render(onScanSuccess, onScanFailure);
+
+resetBtn.addEventListener('click', function() {
+  lastResult = null;
+  qrResult.innerHTML = '';
+  qrStatus.className = 'badge bg-danger';
+  qrStatus.textContent = 'Ready';
+  this.style.display = 'none';
+});
+
+toggleSoundBtn.addEventListener('click', function() {
+  soundOn = !soundOn;
+  this.innerHTML = soundOn ? '<i class="bi bi-volume-up"></i> Sound On' : '<i class="bi bi-volume-mute"></i> Sound Off';
+});
+
+// Voice command: say "bill" to trigger bill display (demo)
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.lang = 'en-US';
+  recognition.onresult = function(event) {
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        const command = event.results[i][0].transcript.trim().toLowerCase();
+        if (command.includes('bill')) {
+          voiceStatus.textContent = 'Voice: Bill command received';
+          voiceStatus.className = 'badge bg-success';
+          qrStatus.textContent = 'Voice bill triggered';
+          qrStatus.className = 'badge bg-primary';
+          if (lastResult) {
+            displayBill(lastResult);
+          } else {
+            speak('Please scan your QR code first.');
+          }
+        }
+      }
+    }
+  };
+  recognition.onerror = function() {
+    voiceStatus.textContent = 'Voice: Error';
+    voiceStatus.className = 'badge bg-danger';
+  };
+  recognition.onstart = function() {
+    voiceStatus.textContent = 'Voice: Listening...';
+    voiceStatus.className = 'badge bg-info';
+  };
+  recognition.onend = function() {
+    voiceStatus.textContent = 'Voice: Ready';
+    voiceStatus.className = 'badge bg-info';
+    recognition.start(); // Restart for continuous listening
+  };
+  recognition.start();
+} else {
+  voiceStatus.textContent = 'Voice: Not supported';
+  voiceStatus.className = 'badge bg-secondary';
+}
+</script>
+{% endblock %}

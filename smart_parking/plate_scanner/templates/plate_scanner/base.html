@@ -174,10 +174,16 @@
                             <i class="bi bi-door-closed"></i> Exit
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'plate_scanner:qr_scanner' %}">
-                            <i class="bi bi-qr-code-scan"></i> QR Scanner
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="qrDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-qr-code-scan"></i> QR Scanners
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="qrDropdown">
+                            <li><a class="dropdown-item" href="{% url 'plate_scanner:qr_scanner_entrance' %}">Entrance QR Scanner</a></li>
+                            <li><a class="dropdown-item" href="{% url 'plate_scanner:qr_scanner_exit' %}">Exit QR Scanner</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'plate_scanner:qr_scanner' %}">General QR Scanner</a></li>
+                        </ul>
                     </li>
                     {% if user.is_staff %}
                     <li class="nav-item">

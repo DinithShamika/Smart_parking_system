@@ -75,14 +75,48 @@ function playBeep(success=true) {
   setTimeout(()=>{o.stop();ctx.close();}, 120);
 }
 
+
 function onScanSuccess(decodedText, decodedResult) {
   if (lastResult === decodedText) return;
   lastResult = decodedText;
-  qrResult.innerHTML = `<div class='alert alert-success'><i class='bi bi-check-circle'></i> <b>Scanned:</b> ${decodedText}</div>`;
-  qrStatus.className = 'badge bg-success';
-  qrStatus.textContent = 'Success';
+  qrStatus.className = 'badge bg-info';
+  qrStatus.textContent = 'Checking...';
   playBeep(true);
   resetBtn.style.display = 'inline-block';
+  // Send to backend for bill lookup
+  fetch('/plate_scanner/qr_code_bill/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: decodedText })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'success') {
+      const bill = data.bill;
+      let html = `<div class='alert alert-success'><i class='bi bi-check-circle'></i> <b>Plate:</b> ${bill.plate}</div>`;
+      html += `<div class='mb-2'><b>Entry:</b> ${bill.entry_time} <b>Exit:</b> ${bill.exit_time || '-'}</div>`;
+      html += `<div class='mb-2'><b>Duration:</b> ${bill.duration || '-'}</div>`;
+      if (bill.is_free) {
+        html += `<div class='display-5 text-success mb-2'><i class='bi bi-cash-coin'></i> <b>FREE PARKING</b></div>`;
+        html += `<div class='h4'>Amount Due: <span class='text-success'>0.00</span></div>`;
+      } else {
+        html += `<div class='display-5 text-primary mb-2'><i class='bi bi-receipt'></i> <b>Bill</b></div>`;
+        html += `<div class='h4'>Amount Due: <span class='text-danger'>${bill.amount.toFixed(2)}</span></div>`;
+      }
+      qrResult.innerHTML = html;
+      qrStatus.className = 'badge bg-success';
+      qrStatus.textContent = 'Bill Ready';
+    } else {
+      qrResult.innerHTML = `<div class='alert alert-danger'><i class='bi bi-x-circle'></i> ${data.message}</div>`;
+      qrStatus.className = 'badge bg-danger';
+      qrStatus.textContent = 'Error';
+    }
+  })
+  .catch(() => {
+    qrResult.innerHTML = `<div class='alert alert-danger'><i class='bi bi-x-circle'></i> Server error.</div>`;
+    qrStatus.className = 'badge bg-danger';
+    qrStatus.textContent = 'Error';
+  });
 }
 
 function onScanFailure(error) {

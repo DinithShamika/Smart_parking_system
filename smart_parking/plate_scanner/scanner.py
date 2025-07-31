@@ -349,13 +349,26 @@ class PlateScanner:
                         vehicle=vehicle,
                         is_active=True
                     ).first()
-                    
                     if parking_session:
                         parking_session.exit_time = timezone.now()
                         parking_session.is_active = False
                         parking_session.total_amount = parking_session.calculate_amount()
                         parking_session.save()
                         logger.info(f"✓ Closed parking session for {detected_text}, amount: {parking_session.total_amount}")
+                        # Set slot as available if booking exists
+                        try:
+                            from booking.models import Booking
+                            # Find the most recent booking with a slot for this vehicle
+                            booking = Booking.objects.filter(vehicle_no=detected_text, slot__isnull=False).order_by('-booking_time').first()
+                            if booking and booking.slot:
+                                logger.info(f"[EXIT] Found booking for vehicle {detected_text} with slot {booking.slot.slot_number}")
+                                booking.slot.is_available = True
+                                booking.slot.save()
+                                logger.info(f"[EXIT] Slot {booking.slot.slot_number} set to available after exit")
+                            else:
+                                logger.warning(f"[EXIT] No booking with slot found for vehicle {detected_text}")
+                        except Exception as e:
+                            logger.error(f"[EXIT] Error setting slot available for vehicle {detected_text}: {e}")
                 
                 # Create scan record
                 scan_record = ScanRecord.objects.create(

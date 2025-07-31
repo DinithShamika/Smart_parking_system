@@ -8,25 +8,10 @@ class VehicleAdmin(admin.ModelAdmin):
     search_fields = ['plate_number']
     ordering = ['-registered_at']
 
-@admin.register(ParkingSession)
-class ParkingSessionAdmin(admin.ModelAdmin):
-    list_display = ['session_id', 'vehicle', 'entry_time', 'exit_time', 'is_active', 'total_amount', 'is_paid']
-    list_filter = ['is_active', 'is_paid', 'entry_time', 'exit_time']
-    search_fields = ['vehicle__plate_number', 'session_id']
-    readonly_fields = ['session_id', 'total_amount']
-    ordering = ['-entry_time']
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('vehicle')
-    
-    def save_model(self, request, obj, form, change):
-        if change and 'exit_time' in form.changed_data and obj.exit_time:
-            obj.total_amount = obj.calculate_amount()
-        super().save_model(request, obj, form, change)
 
 @admin.register(ScanRecord)
 class ScanRecordAdmin(admin.ModelAdmin):
-    list_display = ['vehicle', 'scan_type', 'timestamp', 'confidence_score']
+    list_display = ['vehicle', 'scan_type', 'timestamp', 'confidence_score', 'image']
     list_filter = ['scan_type', 'timestamp']
     search_fields = ['vehicle__plate_number']
     readonly_fields = ['confidence_score']

@@ -1,3 +1,74 @@
+from django.core.serializers import serialize
+from django.views.decorators.http import require_GET
+# API endpoint to get latest scan records as JSON
+@require_GET
+def api_latest_scans(request):
+    from plate_scanner.models import ScanRecord
+    scans = ScanRecord.objects.select_related('vehicle').order_by('-timestamp')[:10]
+    data = [
+        {
+            'plate_number': scan.vehicle.plate_number if scan.vehicle else '',
+            'scan_type': scan.scan_type,
+            'timestamp': scan.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'confidence_score': scan.confidence_score,
+            'image_url': scan.image.url if scan.image else '',
+        }
+        for scan in scans
+    ]
+    return JsonResponse({'scans': data})
+def qr_scanner_entrance_view(request):
+    """QR code scanner page for entrance."""
+    return render(request, 'plate_scanner/qr_scanner_entrance.html')
+
+def qr_scanner_exit_view(request):
+    """QR code scanner page for exit."""
+    return render(request, 'plate_scanner/qr_scanner_exit.html')
+def qr_code_bill(request):
+    """API endpoint: Given a QR code (plate/session), return parking bill details (free or paid)."""
+    import json
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            code = data.get('code')
+            if not code:
+                return JsonResponse({'status': 'error', 'message': 'No QR code provided.'})
+
+            # Try to find by plate number first
+            session = ParkingSession.objects.filter(vehicle__plate_number=code, is_active=False).order_by('-exit_time').first()
+            if not session:
+                # Try by session id (if QR encodes session id)
+                session = ParkingSession.objects.filter(id=code).first()
+            if not session:
+                return JsonResponse({'status': 'error', 'message': 'No parking session found for this QR code.'})
+
+            # Try to find a related Booking by vehicle number
+            booking = Booking.objects.filter(vehicle_no=session.vehicle.plate_number).order_by('-booking_time').first()
+            if booking:
+                is_free = booking.is_free
+                amount = float(booking.fee)
+            else:
+                # Fallback to session logic
+                is_free = False
+                if hasattr(session, 'is_free') and session.is_free:
+                    is_free = True
+                elif hasattr(session, 'total_amount') and session.total_amount == 0:
+                    is_free = True
+                amount = float(session.total_amount) if session.total_amount is not None else 0.0
+
+            bill = {
+                'plate': session.vehicle.plate_number,
+                'entry_time': session.entry_time.strftime('%Y-%m-%d %H:%M'),
+                'exit_time': session.exit_time.strftime('%Y-%m-%d %H:%M') if session.exit_time else None,
+                'duration': str(session.exit_time - session.entry_time) if session.exit_time else None,
+                'amount': amount,
+                'is_free': is_free,
+            }
+            return JsonResponse({'status': 'success', 'bill': bill})
+        except Exception as e:
+            logger.error(f"QR bill error: {e}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    return JsonResponse({'status': 'error', 'message': 'POST required.'})
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -10,9 +81,9 @@ import base64
 import numpy as np
 from plate_scanner.models import Vehicle, ScanRecord, ParkingSession, ParkingRate
 from booking.models import Booking
-from django.views.decorators.csrf import csrf_exempt
 import traceback
 import logging
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 scanner = PlateScanner()

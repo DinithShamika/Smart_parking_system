@@ -6,6 +6,47 @@
 <div class="dashboard-container">
     <!-- Header -->
     <div class="row mb-4">
+    <!-- Just Arrived / Just Left -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-arrow-right"></i> Just Arrived (Last 10)
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for scan in just_arrived %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><strong>{{ scan.vehicle.plate_number }}</strong> <small class="text-muted">{{ scan.timestamp|timesince }} ago</small></span>
+                            <span class="badge bg-success">Entry</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No recent arrivals</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-arrow-left"></i> Just Left (Last 10)
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for scan in just_left %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><strong>{{ scan.vehicle.plate_number }}</strong> <small class="text-muted">{{ scan.timestamp|timesince }} ago</small></span>
+                            <span class="badge bg-danger">Exit</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No recent exits</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -193,13 +234,24 @@
                                 </div>
                                 <div class="text-muted">
                                     {% if scan.scan_type == 'ENTRY' %}
-                                        Vehicle entered parking
-                                    {% else %}
-                                        Vehicle exited parking
+                                        <span class="badge bg-success">Entrance Gate</span> Vehicle entered parking
+                                    {% elif scan.scan_type == 'EXIT' %}
+                                        <span class="badge bg-danger">Exit Gate</span> Vehicle exited parking
                                         {% if scan.parking_session and scan.parking_session.total_amount %}
                                             - ${{ scan.parking_session.total_amount|floatformat:2 }}
                                         {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Unknown Gate</span>
                                     {% endif %}
+                                    <div class="mt-1 small">
+                                        <b>Confidence:</b> {{ scan.confidence_score|floatformat:2 }}
+                                        {% if scan.image %}
+                                            | <b>Image:</b> <a href="{{ scan.image.url }}" target="_blank">View</a>
+                                        {% endif %}
+                                        {% if scan.parking_session %}
+                                            | <b>Session:</b> {{ scan.parking_session.session_id }}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>

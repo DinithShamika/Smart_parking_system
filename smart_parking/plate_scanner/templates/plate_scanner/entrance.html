@@ -1,29 +1,12 @@
+
 {% extends "plate_scanner/base.html" %}
 
 {% block title %}Smart Parking - Enhanced Entrance Scanner{% endblock %}
 
 {% block content %}
-<div class="scanner-container">
-    <!-- Header with Live Stats -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="text-center">
-                <h1 class="display-5 fw-bold text-primary mb-2">
-                    <i class="bi bi-camera-video-fill"></i> Enhanced Entrance Scanner
-                </h1>
-                <p class="text-muted">High-accuracy number plate detection for vehicle entry</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-gradient-primary text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0">
-                        <i class="bi bi-clock"></i> Live Stats
-
-
 <div class="container py-4">
-  <div class="row g-4 align-items-stretch">
-    <div class="col-lg-8">
+  <div class="row g-4 align-items-stretch flex-column-reverse flex-lg-row justify-content-center">
+    <div class="col-12 col-lg-8 mb-4 mb-lg-0 d-flex flex-column">
       <div class="card shadow-lg h-100">
         <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
           <span><i class="bi bi-door-open"></i> <b>Entrance Camera</b></span>
@@ -31,7 +14,7 @@
         </div>
         <div class="card-body p-0 bg-dark rounded-bottom">
           <div class="camera-container position-relative rounded-bottom overflow-hidden" style="min-height:340px;">
-            <video id="camera" width="100%" style="max-height:400px;object-fit:cover;" autoplay muted></video>
+            <video id="camera" width="100%" style="max-height:45vh;min-height:180px;object-fit:cover;" autoplay muted playsinline></video>
             <div id="scanningOverlay" class="scanning-overlay" style="display: none;">
               <div class="spinner-border text-light" role="status"></div>
               <p class="mt-3 mb-0">Scanning for number plate...</p>
@@ -44,13 +27,13 @@
           <i class="bi bi-123"></i> <b>Real-Time Plate Detection</b>
         </div>
         <div class="card-body">
-          <div id="realTimeText" class="display-6 text-center text-primary fw-bold" style="letter-spacing:2px;">
+          <div id="realTimeText" class="display-6 text-center text-primary fw-bold" style="letter-spacing:2px;word-break:break-all;">
             <span class="text-muted">Waiting for scan...</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-lg-4">
+    <div class="col-12 col-lg-4 d-flex flex-column">
       <div class="card shadow-sm mb-4">
         <div class="card-header bg-secondary text-white">
           <i class="bi bi-gear"></i> <b>Controls</b>
@@ -83,9 +66,9 @@
     </div>
   </div>
 </div>
-            </div>
-        </div>
+        
     </div>
+  </div>
 </div>
 
 <style>

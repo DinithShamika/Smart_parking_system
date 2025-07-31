@@ -6,8 +6,8 @@
 
 
 <div class="container py-4">
-  <div class="row g-4 align-items-stretch">
-    <div class="col-lg-8">
+  <div class="row g-4 align-items-stretch flex-column-reverse flex-lg-row justify-content-center">
+    <div class="col-12 col-lg-8 mb-4 mb-lg-0 d-flex flex-column">
       <div class="card shadow-lg h-100">
         <div class="card-header bg-danger text-white d-flex align-items-center justify-content-between">
           <span><i class="bi bi-door-closed"></i> <b>Exit Camera</b></span>
@@ -15,7 +15,7 @@
         </div>
         <div class="card-body p-0 bg-dark rounded-bottom">
           <div class="camera-container position-relative rounded-bottom overflow-hidden" style="min-height:340px;">
-            <video id="camera" width="100%" style="max-height:400px;object-fit:cover;" autoplay muted></video>
+<video id="camera" width="100%" style="max-height:45vh;min-height:180px;object-fit:cover;" autoplay muted playsinline></video>
             <div id="scanningOverlay" class="scanning-overlay" style="display: none;">
               <div class="spinner-border text-light" role="status"></div>
               <p class="mt-3 mb-0">Scanning for number plate...</p>
@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <div class="col-lg-4">
+    <div class="col-12 col-lg-4 d-flex flex-column">
       <div class="card shadow-sm mb-4">
         <div class="card-header bg-secondary text-white">
           <i class="bi bi-gear"></i> <b>Controls</b>
@@ -48,26 +48,6 @@
           </button>
           <button id="quickScanBtn" class="btn btn-warning btn-lg">
             <i class="bi bi-lightning"></i> Quick Scan
-          </button>
-        </div>
-      </div>
-      <div class="card shadow-sm">
-        <div class="card-header bg-light">
-          <i class="bi bi-info-circle"></i> <b>Instructions</b>
-        </div>
-        <div class="card-body">
-          <ul class="mb-0">
-            <li>Ensure the vehicle plate is clearly visible to the camera.</li>
-            <li>Click <b>Start Scanner</b> to begin real-time detection.</li>
-            <li>Detected plates will appear instantly below the camera.</li>
-            <li>Use <b>Quick Scan</b> for a one-time fast scan.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <style>
 .camera-container {
     position: relative;
@@ -75,7 +55,6 @@
     border-radius: 8px;
     overflow: hidden;
 }
-
 .scanning-overlay {
     position: absolute;
     top: 0;
@@ -90,7 +69,6 @@
     color: white;
     z-index: 10;
 }
-
 .detection-box {
     position: absolute;
     border: 3px solid #dc3545;
@@ -99,17 +77,14 @@
     z-index: 5;
     animation: pulse-red 1s infinite;
 }
-
 @keyframes pulse-red {
     0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
     100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
 }
-
 .bg-gradient-danger {
     background: linear-gradient(45deg, #dc3545, #c82333);
 }
-
 .exit-item {
     padding: 15px;
     border-left: 4px solid #dc3545;
@@ -117,11 +92,51 @@
     background: #f8f9fa;
     border-radius: 4px;
 }
-
 .exit-item.success {
     border-left-color: #28a745;
     background: #d4edda;
 }
+.exit-item.warning {
+    border-left-color: #ffc107;
+    background: #fff3cd;
+}
+.payment-info {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+.duration-info {
+    background: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+@media (max-width: 991.98px) {
+  .col-lg-8, .col-lg-4 {
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+  .camera-container video {
+    max-height: 35vh !important;
+  }
+}
+@media (max-width: 575.98px) {
+  .camera-container video {
+    max-height: 28vh !important;
+    min-height: 120px !important;
+  }
+  .card-header, .card-body {
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+  .display-6 {
+    font-size: 1.2rem;
+  }
+}
+
+
 
 .exit-item.warning {
     border-left-color: #ffc107;
