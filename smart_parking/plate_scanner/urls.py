@@ -4,6 +4,7 @@ from . import views
 app_name = 'plate_scanner'
 
 urlpatterns = [
+    path('api/latest-scans/', views.api_latest_scans, name='api_latest_scans'),
     path('entrance/', views.entrance_view, name='entrance'),
     path('exit/', views.exit_view, name='exit'),
     path('api/start-scan/', views.start_scan, name='start_scan'),
@@ -23,4 +24,6 @@ urlpatterns = [
     path('admin/payment/<uuid:session_id>/mark-paid/', views.mark_payment_received, name='mark_payment'),
     path('admin/vehicle/<str:plate_number>/', views.vehicle_details, name='vehicle_details'),
     path('qr-scanner/', views.qr_scanner_view, name='qr_scanner'),
+    path('qr-scanner/entrance/', views.qr_scanner_entrance_view, name='qr_scanner_entrance'),
+    path('qr-scanner/exit/', views.qr_scanner_exit_view, name='qr_scanner_exit'),
 ]
