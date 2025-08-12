@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'smart_parking.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'smart_parking_db',
+        'NAME': 'parking_db',
         'USER': 'postgres',
         'PASSWORD': '2200',
         'HOST': 'localhost',
