@@ -27,6 +27,4 @@ urlpatterns = [
     path('registration-success/', views.registration_success, name='registration_success'),
     path('login/', views.login_view, name='login'),
     path('delete-booking/<uuid:booking_id>/', views.delete_booking, name='delete_booking'),
-    path('update-fee/<uuid:booking_id>/', views.update_fee, name='update_fee'),
-    path('update-free/<uuid:booking_id>/', views.update_free, name='update_free'),
 ]
