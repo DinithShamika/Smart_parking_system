@@ -1,34 +1,3 @@
-def update_fee(request, booking_id):
-    """Update the fee for a booking from the admin dashboard."""
-    if 'user_type' not in request.session or request.session['user_type'] != 'admin':
-        messages.error(request, 'Please login as an admin to access this page.')
-        return redirect('booking:admin_login')
-    booking = get_object_or_404(Booking, booking_id=booking_id)
-    if request.method == 'POST':
-        try:
-            fee = request.POST.get('fee')
-            booking.fee = fee if fee else 0.00
-            booking.save()
-            messages.success(request, 'Fee updated successfully.')
-        except Exception as e:
-            messages.error(request, f'Error updating fee: {e}')
-    return redirect('booking:admin_dashboard')
-
-def update_free(request, booking_id):
-    """Update the free status for a booking from the admin dashboard."""
-    if 'user_type' not in request.session or request.session['user_type'] != 'admin':
-        messages.error(request, 'Please login as an admin to access this page.')
-        return redirect('booking:admin_login')
-    booking = get_object_or_404(Booking, booking_id=booking_id)
-    if request.method == 'POST':
-        try:
-            is_free = request.POST.get('is_free')
-            booking.is_free = bool(is_free)
-            booking.save()
-            messages.success(request, 'Free status updated successfully.')
-        except Exception as e:
-            messages.error(request, f'Error updating free status: {e}')
-    return redirect('booking:admin_dashboard')
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.mail import send_mail, EmailMessage
