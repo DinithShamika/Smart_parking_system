@@ -32,12 +32,9 @@ class Booking(models.Model):
     booking_time = models.DateTimeField(default=datetime.now)
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True)
     
-    fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Parking fee for this booking")
-    is_free = models.BooleanField(default=False, help_text="Mark this booking as free parking")
-
     def __str__(self):
         return f"{self.driver_name} - {self.slot.slot_number}"
-
+    
     def save(self, *args, **kwargs):
         if not self.qr_code:
             self.generate_qr_code()
@@ -45,7 +42,7 @@ class Booking(models.Model):
         # Update slot availability
         self.slot.is_available = False
         self.slot.save()
-
+    
     def generate_qr_code(self):
         qr = qrcode.QRCode(
             version=1,
